@@ -1,13 +1,9 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'PR VERSION check'
+description: 'Check Pull Request changed a VERSION file and that it does not conflict with the trunk'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  token:
+    description: 'GITHUB_TOKEN allowing access to repo'
     required: true
-    default: '1000'
-outputs:
-  time: # output will be available to future steps
-    description: 'The message to output'
 runs:
   using: 'node12'
   main: 'dist/index.js'

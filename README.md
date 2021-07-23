@@ -1,116 +1,87 @@
-# Create a JavaScript Action
+# Pull Request VERSION Check GitHub Action
 
-<p align="center">
-  <a href="https://github.com/actions/javascript-action/actions"><img alt="javscript-action status" src="https://github.com/actions/javascript-action/workflows/units-test/badge.svg"></a>
-</p>
+This action checks two things in Pull Requests:
+1. That at least one file named `VERSION` was changed in the PR.
+2. That the contents of any changed `VERSION` file were not changed to be identical to that of the same
+   file on the trunk branch.  This would indicate that two people both created PRs that changed the `VERSION`
+   to the same number, one has already merged their PR, and we now have a conflict situation.
 
-Use this template to bootstrap the creation of a JavaScript action.:rocket:
+## Usage
 
-This template includes tests, linting, a validation workflow, publishing, and versioning guidance.
+To perform this check on your repo when submitting PRs, create a file under `.github/workflows`,
+e.g. `.github/workflows/PR-VERSION-check.yml`, with the following contents:
+```yaml
+name: Check PR VERSION file(s)
+on: [pull_request]
+jobs:
+  PR-VERSION-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR-VERSION-check
+        id: pr-version-check
+        uses: sampierson/PR-VERSION-check-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+```
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+## Contributing
 
-## Create an action from this template
+Check out this repo.
 
-Click the `Use this Template` and provide the new repo details for your action
-
-## Code in Main
-
-Install the dependencies
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Run the tests :heavy_check_mark:
+Make your modifications.
+
+Lint your changes.
+
+```bash
+npm run lint
+```
+
+### Running Tests
+
+These tests run against the live GitHub API.  There are three specially crafted PRs filed against this repo that are
+used for testing purposes.  Note that the `VERSION` file in the repo serves no purpose other than for testing.
+You must provide a GitHub Personal Access Token that can access this repo.  The repo is
+actually public, so an access token with no scopes works fine.
+
+```bash
+export GITHUB_ACCESS_TOKEN='xxxxxxxxxxxxxxxxxxxxxxxxx'
+```
+
+Run the tests:
 
 ```bash
 $ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
+...
+ PASS  src/GitHubRepoChecker.test.js
+  GitHubRepoChecker
+    .checkPullRequestVersionFiles
+      when give a pull request that does not exist
+        ✓ it throws (361 ms)
+      when the PR does not have any changed VERSION files
+        ✓ it throws PullRequestError (372 ms)
+      when the PR has a changed VERSION file that conflicts
+        ✓ it throws PullRequestError (1032 ms)
+      when the PR has a changed VERSION file that does not conflict
+        ✓ it does not throw (13 ms)
 ...
 ```
 
-## Change action.yml
+### Package for Distribution
 
-The action.yml defines the inputs and output for your action.
+Pick a new version, e.g. `v2`.
+Update the version in the `uses:` line in section "Usage" above.
+Package and release code on a new release branch:
 
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-const core = require('@actions/core');
-...
-
-async function run() {
-  try {
-      ...
-  }
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
 ```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Package for distribution
-
-GitHub Actions will run the entry point from the action.yml. Packaging assembles the code into one file that can be checked in to Git, enabling fast and reliable execution and preventing the need to check in node_modules.
-
-Actions are run from GitHub repos.  Packaging the action will create a packaged action in the dist folder.
-
-Run prepare
-
-```bash
-npm run prepare
+git checkout -b v2
+npm prepare
+git add README.md dist
+git commit -m "Package v2"
+git push origin v2
 ```
-
-Since the packaged index.js is run from the dist folder.
-
-```bash
-git add dist
-```
-
-## Create a release branch
-
-Users shouldn't consume the action from master since that would be latest code and actions can break compatibility between major versions.
-
-Checkin to the v1 release branch
-
-```bash
-git checkout -b v1
-git commit -a -m "v1 release"
-```
-
-```bash
-git push origin v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket:
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Usage
-
-You can now consume the action by referencing the v1 branch
-
-```yaml
-uses: actions/javascript-action@v1
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/javascript-action/actions) for runs of this action! :rocket:

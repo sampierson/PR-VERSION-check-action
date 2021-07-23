@@ -1,18 +1,19 @@
 const core = require('@actions/core');
-const wait = require('./wait');
+const github = require('@actions/github');
+const GitHubRepoChecker = require('./src/GitHubRepoChecker').GitHubRepoChecker;
 
-
-// most @actions toolkit packages have async methods
 async function run() {
   try {
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
+    if (github.context.eventName !== 'pull_request') {
+      core.setFailed('This action only works on pull requests');
+      return;
+    }
 
-    core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
+    const pullRequestNumber = github.context.payload.number;
+    const token = core.getInput('token');
 
-    core.setOutput('time', new Date().toTimeString());
+    const repoChecker = new GitHubRepoChecker(github.context.repo.owner, github.context.repo.repo, token);
+    await repoChecker.checkPullRequestVersionFiles(pullRequestNumber);
   } catch (error) {
     core.setFailed(error.message);
   }
