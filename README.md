@@ -80,7 +80,7 @@ Package and release code on a new release branch:
 
 ```
 git checkout -b v2
-npm prepare
+npm run prepare
 git add README.md dist
 git commit -m "Package v2"
 git push origin v2
