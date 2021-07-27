@@ -9899,6 +9899,7 @@ function wrappy (fn, cb) {
 /***/ 1940:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+var __webpack_unused_export__;
 const github = __nccwpck_require__(5438);
 const axios = __nccwpck_require__(6545).default;
 const path = __nccwpck_require__(5622);
@@ -9912,11 +9913,12 @@ class PullRequestError extends Error {
 
 class GitHubRepoChecker {
 
-  constructor(owner, repo, token) {
+  constructor(owner, repo, token, debug= false) {
     this.owner = owner;
     this.repo = repo;
     this.token = token;
     this.octokit = github.getOctokit(this.token);
+    this.verbose = debug;
   }
 
   async checkPullRequestVersionFiles(prNumber) {
@@ -9924,6 +9926,7 @@ class GitHubRepoChecker {
 
     const changedFiles = await this.getFilesChangedInPullRequest(prNumber);
     for (const file of changedFiles) {
+      this.debug(`File ${file.filename} changed`);
       if (path.basename(file.filename) === 'VERSION') {
         aVersionFileChanged = true;
         await this.versionFileConflicts(file);
@@ -9932,6 +9935,7 @@ class GitHubRepoChecker {
     if (!aVersionFileChanged) {
       throw new PullRequestError(`No VERSION file changed in ${this.owner}/${this.repo} Pull Request #${prNumber}`);
     }
+    return true;
   }
 
   async getFilesChangedInPullRequest(prNumber) {
@@ -9950,6 +9954,7 @@ class GitHubRepoChecker {
   async versionFileConflicts(file) {
     const fileContentInPr = await this.getPrFileContents(file);
     const fileContentInTrunk = await this.getTrunkFileContents(file);
+    this.debug(`Comparing PR ${JSON.stringify(fileContentInPr)} with trunk ${JSON.stringify(fileContentInTrunk)}`);
 
     if (fileContentInPr.trim() === fileContentInTrunk.trim()) {
       throw new PullRequestError(`PR change of file "${file.filename}" conflicts with trunk contents: "${fileContentInPr.trim()}"`)
@@ -9975,8 +9980,15 @@ class GitHubRepoChecker {
     })
     return result.data;
   }
+
+  debug(message) {
+    if (this.verbose) {
+      console.log(message);
+    }
+  }
 }
 
+__webpack_unused_export__ = PullRequestError;
 exports.O = GitHubRepoChecker;
 
 
