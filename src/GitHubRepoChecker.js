@@ -1,5 +1,5 @@
 const github = require('@actions/github');
-const axios = require('axios').default;
+const axios = require('axios');
 const path = require('path');
 
 class PullRequestError extends Error {
@@ -11,7 +11,7 @@ class PullRequestError extends Error {
 
 class GitHubRepoChecker {
 
-  constructor(owner, repo, token, debug= false) {
+  constructor(owner, repo, token, debug = false) {
     this.owner = owner;
     this.repo = repo;
     this.token = token;
@@ -74,7 +74,7 @@ class GitHubRepoChecker {
       owner: this.owner,
       repo: this.repo,
       path: file.filename,
-      headers: {'Accept': 'application/vnd.github.v3.raw'}
+      headers: { 'Accept': 'application/vnd.github.v3.raw' }
     })
     return result.data;
   }
