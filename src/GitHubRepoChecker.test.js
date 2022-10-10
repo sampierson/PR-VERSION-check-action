@@ -14,12 +14,12 @@ describe('GitHubRepoChecker', () => {
 
     describe('when give a pull request that does not exist', () => {
       beforeEach(() => {
-        this.prNumber = '99';
+        this.prNumber = 'NOT-A-PR-NUMBER';
       });
       test('it throws', async () => {
         const ghrc = new GitHubRepoChecker(repoOwner, repo, token);
         await expect(
-          ghrc.checkPullRequestVersionFiles('99')
+          ghrc.checkPullRequestVersionFiles(this.prNumber)
         ).rejects.toThrow("Not Found");
       })
     })
